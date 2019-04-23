@@ -1,0 +1,48 @@
+.tableCell{
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    border-radius: 30%;
+    background-color: rgba(255, 255, 255, 0.719);
+    margin: 2px;
+    line-height: 60px;
+}
+
+h1{
+    text-align: center;
+}
+
+.column{
+    background-color: rgb(195, 207, 207);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.table{
+    /* padding : 50px; */
+    border-radius: 15%;
+    /* background-color: black; */
+    /* width: auto; */
+    /* display: inline-block; */
+    margin: 0 auto;
+
+}
+
+/* .border{
+    border: 2px solid black;
+    background-color: grey;
+} */
+
+.row{
+    /* background-color: rgba(255, 255, 255, 0.918); */
+    display: flex;
+    flex-direction: row;
+}
+
+.header {
+    background-color: rgb(195, 207, 207);
+    border-top-right-radius: 5%;
+    border-top-left-radius: 5%;
+}
