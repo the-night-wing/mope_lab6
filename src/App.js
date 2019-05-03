@@ -4,12 +4,16 @@ import './App.css';
 import "./bootstrap.css";
 
 import GreetingScreen from "./components/greetingScreen/greetingScreen.js"
+import Table from "./components/table/table.js"
+import TableCell from "./components/tableCell/tableCell.js"
 
 class App extends Component {
 
   state = {
     xMin : [-40, -35, 15],
     xMax : [20, 15, 25],
+    selectedLab : 1,
+    l : 1.73,
     selectedTypeOfEq : "linear",
     xNorm : [],
     xNatur : [],
@@ -22,7 +26,7 @@ class App extends Component {
   }
 
   setUpNormValues = (ifChange="") => {
-    let {selectedTypeOfEq} = this.state;
+    let {selectedTypeOfEq, l} = this.state;
     if(ifChange) (selectedTypeOfEq = ifChange);
     let xNorm = [];
 
@@ -41,7 +45,10 @@ class App extends Component {
       // xNorm[5] = [-1, 1, -1, 1, -1, 1, -1, 1];
       // xNorm[6] = [-1, 1, -1, 1, -1, 1, -1, 1];
       // xNorm[7] = [-1, 1, -1, 1, -1, 1, -1, 1];
-      xNormInteraction[4] = []; xNormInteraction[5] = []; xNormInteraction[6] = []; xNormInteraction[7] = [];
+      for(let i = 4; i < 8; i++){
+        xNormInteraction[i] = [];
+      }
+      //  xNormInteraction[5] = []; xNormInteraction[6] = []; xNormInteraction[7] = [];
       xNormInteraction[1].forEach((element, index) => {
         xNormInteraction[4][index] = xNormInteraction[2][index] * element;
         xNormInteraction[5][index] = xNormInteraction[3][index] * element;
@@ -52,12 +59,15 @@ class App extends Component {
     let xNormQuadric = [];
       xNormQuadric = [
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] ,
-        [-1, -1, -1, -1, 1, 1, 1, 1, -1.73, 1.73, 0, 0, 0, 0, 0], 
-        [-1, -1, 1, 1, -1, -1, 1, 1, 0, 0, -1.73, 1.73, 0, 0, 0], 
-        [-1, 1, -1, 1, -1, 1, -1, 1, 0, 0, 0, 0, -1.73, 1.73, 0] 
+        [-1, -1, -1, -1, 1, 1, 1, 1, -l, l, 0, 0, 0, 0, 0], 
+        [-1, -1, 1, 1, -1, -1, 1, 1, 0, 0, -l, l, 0, 0, 0], 
+        [-1, 1, -1, 1, -1, 1, -1, 1, 0, 0, 0, 0, -l, l, 0] 
       ];
-      xNormQuadric[4] = []; xNormQuadric[5] = []; xNormQuadric[6] = []; xNormQuadric[7] = [];
-      xNormQuadric[8] = []; xNormQuadric[9] = []; xNormQuadric[10] = []; 
+      for(let i = 4; i < 11; i++){
+        xNormQuadric[i] = [];
+      }
+      //  xNormQuadric[5] = []; xNormQuadric[6] = []; xNormQuadric[7] = [];
+      // xNormQuadric[8] = []; xNormQuadric[9] = []; xNormQuadric[10] = []; 
       xNormQuadric[1].forEach((element, index) => {
         xNormQuadric[4][index] = xNormQuadric[2][index] * element;
         xNormQuadric[5][index] = xNormQuadric[3][index] * element;
@@ -158,6 +168,7 @@ class App extends Component {
           }
         } 
 
+
         xNaturQuadric[0][8] = xNorm[1][8]*delta[0] + xAverage[0];
         xNaturQuadric[0][9] = xNaturQuadric[0][8];
         xNaturQuadric[0][8] = xNorm[1][8]*delta[0] + xAverage[0];
@@ -188,12 +199,30 @@ class App extends Component {
 
 
   handleTypeChange = (event) => {
+    // console.log(event)
     this.setState({
       selectedTypeOfEq : event.target.value
-  }, this.setUpNormValues(event.target.value))
+      }
+      // , console.log(this.state.selectedTypeOfEq)
+      , this.setUpNormValues(event.target.value)
+    )
+  }
+
+  handleLabChange = (event) => {
+    const l = (event.target.value == 1) ? 1.73 : 1.215
+    // console.log(event.target.value + " " + this.state.selectedLab)
+    this.setState({
+      selectedLab : event.target.value,
+      l : l
+      }
+      // , console.log(this.state.selectedTypeOfEq)
+      // , 
+      // this.setUpNormValues(event.target.value)
+    )
   }
 
   render() {
+    // if (this.state.xNatur[0] === undefined) this.state.xNatur[0] = []
     return (
       <div className="App">
         {/* <header className="App-header">
@@ -210,7 +239,18 @@ class App extends Component {
             Learn React
           </a>
         </header> */}
-        <GreetingScreen handleTypeChange={(event) => this.handleTypeChange(event)} selectedType={this.state.selectedTypeOfEq}/>
+        <GreetingScreen handleLabChange={(event) => this.handleLabChange(event)} selectedLab={this.state.selectedLab} handleTypeChange={(event) => this.handleTypeChange(event)} selectedType={this.state.selectedTypeOfEq}/>
+        <Table xValues={this.state.xNorm} />
+        <Table xValues={this.state.xNatur} />
+        <h4>{this.state.xNatur}</h4>
+        <div className="column">
+        {/* {
+          
+            this.state.xNatur[0].map((item) => {
+                return (item > 0) ? <TableCell value={`+${item}`}/> : <TableCell value={item}/>
+            })
+        }     */}
+        </div>
 
       </div>
     );
