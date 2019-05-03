@@ -5,7 +5,7 @@ import "./bootstrap.css";
 
 import GreetingScreen from "./components/greetingScreen/greetingScreen.js"
 import Table from "./components/table/table.js"
-import TableCell from "./components/tableCell/tableCell.js"
+// import TableCell from "./components/tableCell/tableCell.js"
 
 class App extends Component {
 
@@ -14,21 +14,28 @@ class App extends Component {
     xMax : [20, 15, 25],
     selectedLab : 1,
     l : 1.73,
-    selectedTypeOfEq : "linear",
+    selectedTypeOfEq : 0,
     xNorm : [],
     xNatur : [],
-    m : 3,
+    xNormArray : [],
+    xNaturArray : [],
+    m : 2,
+    kek : "setState Ne Srabotal"
 
   }
 
   componentDidMount(){
-    this.setUpNormValues();
+    if((this.state.xNormArray == false && this.state.xNaturArray == false)) this.setUpNormValues();
+    this.setState({
+      kek : "setState srabotal"
+    }, () => console.log("kek " + this.state.kek));
+    // console.log("kek " + this.state.kek)
   }
 
   setUpNormValues = (ifChange="") => {
     let {selectedTypeOfEq, l} = this.state;
     if(ifChange) (selectedTypeOfEq = ifChange);
-    let xNorm = [];
+    // let xNormArray = [];
 
     let xNormLinear = [];
       xNormLinear[0] = [1, 1, 1, 1];
@@ -83,44 +90,45 @@ class App extends Component {
 
 
 
-    if(selectedTypeOfEq === "linear"){
-      xNorm = xNormLinear;
-    }else if(selectedTypeOfEq === "interaction"){
-      xNorm = xNormInteraction;
-    }else if(selectedTypeOfEq === "quadric"){
-      xNorm = xNormQuadric;
-    }
-    console.log(xNorm);
-
+    // if(selectedTypeOfEq === "linear"){
+    //   xNorm = xNormLinear;
+    // }else if(selectedTypeOfEq === "interaction"){
+    //   xNorm = xNormInteraction;
+    // }else if(selectedTypeOfEq === "quadric"){
+    //   xNorm = xNormQuadric;
+    // }
+    // console.log(xNorm);
+      console.log([xNormLinear, xNormInteraction, xNormQuadric])
     this.setState({
-      xNorm
-    }, this.setUpNaturValues(xNorm, selectedTypeOfEq))
+      xNormArray : [xNormLinear, xNormInteraction, xNormQuadric]
+    }, this.setUpNaturValues([xNormLinear, xNormInteraction, xNormQuadric], selectedTypeOfEq))
     
   } 
+  // , ifChange=""
 
-  setUpNaturValues = (xNorm, ifChange="") => {
+  setUpNaturValues = (xNormArray, ifChange="") => {
     let {selectedTypeOfEq, xMax, xMin} = this.state;
     if(ifChange) (selectedTypeOfEq = ifChange);
     let xNatur = [];
 
   
-    if(selectedTypeOfEq === "linear"){  
+    // if(selectedTypeOfEq === "linear"){  
       let xNaturLinear = [];
       for( let i = 1; i < 4; i++){
         xNaturLinear[i - 1] = [];
-        xNorm[i].forEach((element, index) => {
+        xNormArray[0][i].forEach((element, index) => {
           (element === 1) ? (xNaturLinear[i - 1][index] = element*xMax[i - 1]) : (xNaturLinear[i - 1][index] = element*xMin[i - 1])
         })
       }
-      xNatur = xNaturLinear;
-    }
+      // xNatur = xNaturLinear;
+    // }
 
   
-    if(selectedTypeOfEq === "interaction"){  
+    // if(selectedTypeOfEq === "interaction"){  
       let xNaturInteraction = [];
       for( let i = 1; i < 4; i++){
         xNaturInteraction[i - 1] = [];
-        xNorm[i].forEach((element, index) => {
+        xNormArray[1][i].forEach((element, index) => {
           (element === 1) ? (xNaturInteraction[i - 1][index] = element*xMax[i - 1]) : (xNaturInteraction[i - 1][index] = element*xMin[i - 1])
         })
       }
@@ -139,12 +147,12 @@ class App extends Component {
         xNaturInteraction[5][index] = xNaturInteraction[1][index] * xNaturInteraction[2][index];
         xNaturInteraction[6][index] = xNaturInteraction[2][index] * xNaturInteraction[1][index] * element;
       })
-      xNatur = xNaturInteraction;
-    }
+      // xNatur = xNaturInteraction;
+    // }
 
 
 
-    if(selectedTypeOfEq === "quadric"){
+    // if(selectedTypeOfEq === "quadric"){
       let xNaturQuadric = [];
       const xAverage = [];
       const delta = [];
@@ -158,8 +166,8 @@ class App extends Component {
         for( let i = 1; i < 4; i++){
           xNaturQuadric[i - 1] = []
           for(let j = 0; j < 8; j++){
-            (xNorm[i][j] === 1) ? 
-            (xNaturQuadric[i - 1][j] = xNorm[i][j]*xMax[i - 1]) : (xNaturQuadric[i - 1][j] = xNorm[i][j]*xMin[i - 1])
+            (xNormArray[2][i][j] === 1) ? 
+            (xNaturQuadric[i - 1][j] = xNormArray[2][i][j]*xMax[i - 1]) : (xNaturQuadric[i - 1][j] = xNormArray[2][i][j]*xMin[i - 1])
           }
         }
         for( let i = 0; i < 3; i++){
@@ -169,11 +177,11 @@ class App extends Component {
         } 
 
 
-        xNaturQuadric[0][8] = xNorm[1][8]*delta[0] + xAverage[0];
+        xNaturQuadric[0][8] = xNormArray[2][1][8]*delta[0] + xAverage[0];
         xNaturQuadric[0][9] = xNaturQuadric[0][8];
-        xNaturQuadric[0][8] = xNorm[1][8]*delta[0] + xAverage[0];
+        xNaturQuadric[0][8] = xNormArray[2][1][8]*delta[0] + xAverage[0];
         xNaturQuadric[0][9] = xNaturQuadric[0][8];
-        xNaturQuadric[0][8] = xNorm[1][8]*delta[0] + xAverage[0];
+        xNaturQuadric[0][8] = xNormArray[2][1][8]*delta[0] + xAverage[0];
         xNaturQuadric[0][9] = xNaturQuadric[0][8];
 
         xNaturQuadric[3] = []; xNaturQuadric[4] = []; xNaturQuadric[5] = []; xNaturQuadric[6] = [];
@@ -189,14 +197,48 @@ class App extends Component {
             xNaturQuadric[i + 7][index] = element*element
           })
         }
-        xNatur = xNaturQuadric;
-      }
-      console.log(xNatur);
+        // xNatur = xNaturQuadric;
+      // }
+      console.log([xNaturLinear, xNaturInteraction, xNaturQuadric]);
       this.setState({
-        xNatur
-      })  
+        xNaturArray : [xNaturLinear, xNaturInteraction, xNaturQuadric]
+      }, this.pickData(xNormArray, [xNaturLinear, xNaturInteraction, xNaturQuadric], selectedTypeOfEq))  
   }
 
+  pickData = (xNormArrayNotState=[], xNaturArrayNotState=[], selectedTypeOfEqProps=null, selectedLab=null) => {
+    // const {selectedTypeOfEq} = this.state;
+    let {xNormArray, xNaturArray} = this.state;
+
+    let selectedTypeOfEq;
+
+    if (selectedTypeOfEqProps === null) {
+       const {selectedTypeOfEqState} = this.state;
+       selectedTypeOfEq = selectedTypeOfEqState;
+    } else {
+      selectedTypeOfEq = selectedTypeOfEqProps;
+    }
+    if(xNormArray == false && xNaturArray == false) {
+      (xNormArray = xNormArrayNotState);
+      (xNaturArray = xNaturArrayNotState);
+    }
+
+    const xNorm = xNormArray[selectedTypeOfEq],
+          xNatur = xNaturArray[selectedTypeOfEq];
+    
+          console.log(xNormArrayNotState);
+          console.log(xNaturArrayNotState);
+    console.log(xNormArray);
+    console.log(xNaturArray);
+    console.log(selectedTypeOfEq);
+    console.log(xNorm);
+    console.log(xNatur);
+    
+    this.setState({
+      xNorm,
+      xNatur
+    })
+
+  }
 
   handleTypeChange = (event) => {
     // console.log(event)
@@ -204,7 +246,7 @@ class App extends Component {
       selectedTypeOfEq : event.target.value
       }
       // , console.log(this.state.selectedTypeOfEq)
-      , this.setUpNormValues(event.target.value)
+      , this.pickData(undefined, undefined, event.target.value)
     )
   }
 

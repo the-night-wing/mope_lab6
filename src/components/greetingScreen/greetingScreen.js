@@ -51,8 +51,8 @@
                             <input
                                 type="radio"
                                 name="select-type"
-                                value="linear"
-                                checked={selectedType === "linear"}
+                                value={0}
+                                checked={selectedType == 0}
                                 className="form-check-input"
                                 onChange={handleTypeChange}
                             />
@@ -64,8 +64,8 @@
                             <input
                                 type="radio"
                                 name="select-type"
-                                value="interaction"
-                                checked={selectedType === "interaction"}
+                                value={1}
+                                checked={selectedType == 1}
                                 className="form-check-input"
                                 onChange={handleTypeChange}
                             />
@@ -77,8 +77,8 @@
                             <input  
                                 type="radio"
                                 name="select-type"
-                                value="quadric"
-                                checked={selectedType === "quadric"}
+                                value={2}
+                                checked={selectedType == 2}
                                 className="form-check-input"
                                 onChange={handleTypeChange}
                             />
