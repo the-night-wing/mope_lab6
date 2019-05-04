@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import "./bootstrap.css";
 
@@ -36,8 +35,9 @@ class App extends Component {
     this.start()
                 .then(() => this.setUpNormValues())
                 .then(() => this.setUpNaturValues())
-                .then(() => this.pickData())
-                .then(() => this.generateYValues())
+                .then(() => this.makeCalculations())
+                // .then(() => this.pickData())
+                // .then(() => this.generateYValues())
 
     
     // this.setState({
@@ -268,20 +268,33 @@ class App extends Component {
       xNatur
     })
 
-  }
-
+  } 
+//  4 8 15
+//  0 1 2 
   generateYValues = () => {
     const {selectedLab, selectedTypeOfEq, m, xMin, xMax, xNatur} = this.state;
     const yValues = [];
 
-    if (!selectedLab) {
+    if (selectedLab == 0) {
       const yMin = 200 + xMin.reduce( (prev, curr) => prev + curr ) / 3;
       const yMax = 200 + xMax.reduce( (prev, curr) => prev + curr ) / 3;
       
+      let yRows = function (){
+        if (selectedTypeOfEq == 0){
+          return 4
+        }
+        if (selectedTypeOfEq == 1){
+          return 8
+        }
+        if (selectedTypeOfEq == 2){
+          return 15
+        }
+      }()
+
       
       for(let i = 0; i < m; i++){
         yValues[i] = [];
-        for (let j = 0; j < 15; j++){
+        for (let j = 0; j < yRows; j++){
           yValues[i][j] = this.randomInteger(yMin, yMax)
         }
       }
@@ -291,30 +304,34 @@ class App extends Component {
         yMin,
         yMax
       }, () => console.log(this.state.yValues))
+    } 
+    if (selectedLab == 1)  {
+        for(let i = 0; i < m; i++){
+          yValues[i] = [];
+          if(selectedTypeOfEq == 2){
+            for (let j = 0; j < 14; j++){
+              yValues[i][j] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + 0.8*xNatur[7][i] +0.7*xNatur[8][i] + 6.5*xNatur[9][i] + 0.2*xNatur[3][i] + 0.9*xNatur[4][i] + 8.7*xNatur[5][i] + 9.1*xNatur[6][i] + Math.random()*10 - 5;
+            }
+          }
+          if(selectedTypeOfEq == 1){
+            for (let j = 0; j < 8; j++){
+              yValues[i][j] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + 0.2*xNatur[3][i] + 0.9*xNatur[4][i] + 8.7*xNatur[5][i] + 9.1*xNatur[6][i] + Math.random()*10 - 5;
+            }
+          }
+          if(selectedTypeOfEq == 0){
+            for (let j = 0; j < 4; j++){
+              yValues[i][j] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + Math.random()*10 - 5;
+            }
+          }
+        }
+        
+        this.setState({
+          yValues
+        }, () => console.log(this.state.yValues))
     }
 
     //    DLya labi 6
-    for(let i = 0; i < m; i++){
-      yValues[i] = [];
-      if(selectedTypeOfEq == 2){
-        for (let j = 0; j < 14; j++){
-          yValues[i][j] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + 0.8*xNatur[7][i] +0.7*xNatur[8][i] + 6.5*xNatur[9][i] + 0.2*xNatur[3][i] + 0.9*xNatur[4][i] + 8.7*xNatur[5][i] + 9.1*xNatur[6][i] + Math.random()*10 - 5;
-        }
-      }
-      if(selectedTypeOfEq == 1){
-        for (let j = 0; j < 8; j++){
-          yValues[i][j] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + 0.2*xNatur[3][i] + 0.9*xNatur[4][i] + 8.7*xNatur[5][i] + 9.1*xNatur[6][i] + Math.random()*10 - 5;
-        }
-      }
-      if(selectedTypeOfEq == 0){
-        for (let j = 0; j < 4; j++){
-          yValues[i][j] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + Math.random()*10 - 5;
-        }
-      }
-    }
-    this.setState({
-      yValues
-    }, () => console.log(this.state.yValues))
+    
 
   }
 
@@ -343,24 +360,33 @@ class App extends Component {
 
 
   handleTypeChange = (event) => {
-    // console.log(event)
+
     this.setState({
       selectedTypeOfEq : event.target.value
       }
-      // , console.log(this.state.selectedTypeOfEq)
-      // , this.pickData(undefined, undefined, event.target.value)
-      , () => this.pickData()
+      , () => this.makeCalculations()
     )
+  
+  }
+
+  makeCalculations = () => {
+    const promise = function () {
+      return( new Promise((resolve, reject) => resolve()) )
+    }()
+
+    promise
+          .then(() => this.pickData())
+          .then(() => this.generateYValues())
+
   }
 
   handleLabChange = (event) => {
-    
-    // console.log(event.target.value + " " + this.state.selectedLab)
+     
     this.setState({
       selectedLab : event.target.value,
       m : ( (event.target.value == 0) ? 3 : 2 )
       }
-      , () => this.pickData()
+      , () => this.makeCalculations()
       // , console.log(this.state.selectedTypeOfEq)
       // , 
       // this.setUpNormValues(event.target.value)
