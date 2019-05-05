@@ -29,7 +29,11 @@ class App extends Component {
     dispersion : 0,
     gp : 0,
     isHomogeneous : true,
-    gTableUsing : 0
+    gTableUsing : 0,
+    aSingle : [],
+    aDouble : [],
+    mx : [],
+    my : 0
 
   }
 
@@ -68,7 +72,9 @@ class App extends Component {
           // promise
             .then(() => this.calculateYAverage())
             .then(() => this.findDispersion())
-            .then(() => this.checkKochreane())
+            .then(() => this.checkCochrane())
+            .then(() => this.calculateTemporaryCoeffs())
+
           // }  //returns promise
               // .then(() => )
 
@@ -512,12 +518,12 @@ class App extends Component {
 
     return(this.setState({
       dispersion
-    }, (!this.state.isHomogeneous && m < 10) ? this.checkKochreane() : null ) )
+    }, (!this.state.isHomogeneous && m < 10) ? this.checkCochrane() : null ) )
     
   }
 
 
-  checkKochreane = () => {
+  checkCochrane = () => {
     const {dispersion, m, selectedTypeOfEq} = this.state;
 
     const gp = +((Math.max(...dispersion)) / (dispersion.reduce((previous, current) => previous + current)));
@@ -549,6 +555,56 @@ class App extends Component {
     , () => (!isHomogeneous && m < 10) ? this.addAColumn() : null
     )
   }
+
+  calculateTemporaryCoeffs = () => {
+    const {xNatur, yAverage, averageY, rows} = this.state;
+    
+    const aSingle = [];
+    const aDouble = [];
+    const mx = [];
+    const my = averageY;
+
+    for( let i = 0; i < xNatur.length; i++){
+      mx[i] = xNatur[i].reduce((prev, curr) => prev+curr) / rows;
+      
+      aSingle[i] = 0
+      for(let j = 0; j < rows; j++){
+        aSingle[i] += yAverage[j]*xNatur[i][j]
+      }
+      aSingle[i] /= rows;
+      
+      aDouble[i] = [];
+      for(let j = 0; j < xNatur.length; j++){
+        aDouble[i][j] = 0;
+        for(let k = 0; k < rows; k++){
+          aDouble[i][j] += xNatur[i][k]*xNatur[j][k]
+        }
+        aDouble[i][j] /= rows;
+      }
+
+    }
+
+    console.log("Mx");
+    console.log(mx);
+    console.log("aSingle");
+    console.log(aSingle);
+    console.log("aDouble");
+    console.log(aDouble);
+
+    this.setState({
+      aSingle,
+      aDouble,
+      mx,
+      my
+    })
+  }
+
+  calculateCoeffs = () => {
+    // giraffe live in zoo. 
+
+    
+  }
+
 
   checkStudent = () => {
     const {dispersion, m, yAverage, xNorm, rows, coeff} = this.state;
