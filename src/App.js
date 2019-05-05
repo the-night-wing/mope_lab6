@@ -11,17 +11,25 @@ class App extends Component {
   state = {
     xMin : [-40, -35, 15],
     xMax : [20, 15, 25],
-    selectedLab : 1,
+    selectedLab : 0 ,
     l : [1.215, 1.73],
     selectedTypeOfEq : 0,
     xNorm : [],
     xNatur : [],
     xNormArray : [],
     xNaturArray : [],
-    m : 2,
+    m : 3,
     yMin : 0,
     yMax : 0,
-    yValues : []
+    yValues : [],
+    rows : 0,
+    xAverage : [],
+    yAverage : [],
+    averageY : 0,
+    dispersion : 0,
+    gp : 0,
+    isHomogeneous : true,
+    gTableUsing : 0
 
   }
 
@@ -44,6 +52,26 @@ class App extends Component {
       // kek : "setState srabotal"
     // }, () => console.log("kek " + this.state.kek));
     // console.log("kek " + this.state.kek)
+  }
+
+  makeCalculations = () => {
+    const promise = function () {
+      return( new Promise((resolve, reject) => resolve()) )
+    }()
+
+    promise
+          .then(() => this.pickData())
+          .then(() => this.calculateRows())
+          .then(() => this.generateYValues())
+          .then(() => this.calculateXAverage())
+          // while( !this.state.isHomogeneous && this.state.m < 10 ){
+          // promise
+            .then(() => this.calculateYAverage())
+            .then(() => this.findDispersion())
+            .then(() => this.checkKochreane())
+          // }  //returns promise
+              // .then(() => )
+
   }
 
   setUpNormValues = () => {
@@ -269,32 +297,43 @@ class App extends Component {
     })
 
   } 
+
+  calculateRows = () => {
+    const {selectedLab, selectedTypeOfEq} = this.state;
+
+    let rows = function (){
+      if (selectedTypeOfEq == 0){
+        return 4
+      }
+      if (selectedTypeOfEq == 1){
+        return 8
+      }
+      if (selectedTypeOfEq == 2){
+        // return (selectedLab == 0) ? 15 : 14
+        return 15-selectedLab
+      }
+    }()
+    
+    this.setState({
+      rows
+    })
+  }
+
 //  4 8 15
 //  0 1 2 
   generateYValues = () => {
-    const {selectedLab, selectedTypeOfEq, m, xMin, xMax, xNatur} = this.state;
+    const {selectedLab, selectedTypeOfEq, m, xMin, xMax, xNatur, rows} = this.state;
     const yValues = [];
+
+    
 
     if (selectedLab == 0) {
       const yMin = 200 + xMin.reduce( (prev, curr) => prev + curr ) / 3;
       const yMax = 200 + xMax.reduce( (prev, curr) => prev + curr ) / 3;
       
-      let yRows = function (){
-        if (selectedTypeOfEq == 0){
-          return 4
-        }
-        if (selectedTypeOfEq == 1){
-          return 8
-        }
-        if (selectedTypeOfEq == 2){
-          return 15
-        }
-      }()
-
-      
       for(let i = 0; i < m; i++){
         yValues[i] = [];
-        for (let j = 0; j < yRows; j++){
+        for (let j = 0; j < rows; j++){
           yValues[i][j] = this.randomInteger(yMin, yMax)
         }
       }
@@ -302,7 +341,8 @@ class App extends Component {
       this.setState({
         yValues,
         yMin,
-        yMax
+        yMax,
+        rows
       }, () => console.log(this.state.yValues))
     } 
     if (selectedLab == 1)  {
@@ -310,24 +350,27 @@ class App extends Component {
           yValues[i] = [];
           if(selectedTypeOfEq == 2){
             for (let j = 0; j < 14; j++){
-              yValues[i][j] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + 0.8*xNatur[7][i] +0.7*xNatur[8][i] + 6.5*xNatur[9][i] + 0.2*xNatur[3][i] + 0.9*xNatur[4][i] + 8.7*xNatur[5][i] + 9.1*xNatur[6][i] + Math.random()*10 - 5;
+              yValues[i][j] = 2.2 + 1.6*xNatur[0][j] + 9.2*xNatur[1][j] + 9.5*xNatur[2][j] + 0.8*xNatur[7][j] +0.7*xNatur[8][j] + 6.5*xNatur[9][j] + 0.2*xNatur[3][j] + 0.9*xNatur[4][j] + 8.7*xNatur[5][j] + 9.1*xNatur[6][j] + Math.random()*10 - 5;
             }
           }
           if(selectedTypeOfEq == 1){
             for (let j = 0; j < 8; j++){
-              yValues[i][j] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + 0.2*xNatur[3][i] + 0.9*xNatur[4][i] + 8.7*xNatur[5][i] + 9.1*xNatur[6][i] + Math.random()*10 - 5;
+              yValues[i][j] = 2.2 + 1.6*xNatur[0][j] + 9.2*xNatur[1][j] + 9.5*xNatur[2][j] + 0.2*xNatur[3][j] + 0.9*xNatur[4][j] + 8.7*xNatur[5][j] + 9.1*xNatur[6][j] + Math.random()*10 - 5;
             }
           }
           if(selectedTypeOfEq == 0){
             for (let j = 0; j < 4; j++){
-              yValues[i][j] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + Math.random()*10 - 5;
+              yValues[i][j] = 2.2 + 1.6*xNatur[0][j] + 9.2*xNatur[1][j] + 9.5*xNatur[2][j] + Math.random()*10 - 5;
             }
           }
         }
-        
+        console.log("Значення У")
+        console.log(yValues)
+
         this.setState({
-          yValues
-        }, () => console.log(this.state.yValues))
+          yValues,
+          rows
+        })
     }
 
     //    DLya labi 6
@@ -336,19 +379,43 @@ class App extends Component {
   }
 
   addAColumn = () => {
-    const {m} = this.state;
+    const {m, yValues, yMin, yMax, selectedTypeOfEq, selectedLab, rows,xNatur} = this.state;
     const newColumn = [];
-    for (let j = 0; j < 8; j++){
-      newColumn[j] = this.randomInteger(+this.state.yMin, +this.state.yMax)
-    }
-    const yValues1 = [...this.state.yValues, newColumn];
-    const newM = m + 1;
 
+    if (selectedLab == 0)  {
+      for (let j = 0; j < rows; j++){
+        newColumn[j] = this.randomInteger(yMin, yMax)
+      }
+    }
+
+    if (selectedLab == 1)  {
+        if(selectedTypeOfEq == 2){
+          for (let i = 0; i < 14; i++){
+            newColumn[i] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + 0.8*xNatur[7][i] +0.7*xNatur[8][i] + 6.5*xNatur[9][i] + 0.2*xNatur[3][i] + 0.9*xNatur[4][i] + 8.7*xNatur[5][i] + 9.1*xNatur[6][i] + Math.random()*10 - 5;
+          }
+        }
+        if(selectedTypeOfEq == 1){
+          for (let i = 0; i < 8; i++){
+            newColumn[i] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + 0.2*xNatur[3][i] + 0.9*xNatur[4][i] + 8.7*xNatur[5][i] + 9.1*xNatur[6][i] + Math.random()*10 - 5;
+          }
+        }
+        if(selectedTypeOfEq == 0){
+          for (let i = 0; i < 4; i++){
+            newColumn[i] = 2.2 + 1.6*xNatur[0][i] + 9.2*xNatur[1][i] + 9.5*xNatur[2][i] + Math.random()*10 - 5;
+          }
+        }
+    }
+
+    const yValues1 = [...yValues, newColumn];
+    // const newM = m + 1;
+    console.log("Було додано стовпчик")
+    console.log(yValues1);
+    
     return(
       this.setState({
         yValues : yValues1,
-        m : newM
-      })
+        m : m + 1
+      }, (m < 10) ? this.calculateYAverage() : null)
     )
   }
 
@@ -357,6 +424,145 @@ class App extends Component {
     rand = Math.floor(rand);
     return rand;
   }
+
+  calculateYAverage = () => {
+    const {yValues, rows, m} = this.state;
+    const yAverage = [];
+    let averageY = 0;
+
+    for(let i = 0; i < rows; i++){
+      yAverage[i] = 0;
+      for(let j = 0; j < m; j++){
+        yAverage[i] += yValues[j][i]
+      }
+      yAverage[i] /= m;
+    }
+    // for(let i = 0; i < rows; i++){
+    //       dispersion[i] = 0;
+    //       for(let j = 0; j < m; j++){
+    //         dispersion[i] += Math.pow((yValues[j][i] - yAverage[i]), 2)
+    //       }
+    //       dispersion[i] /= m
+    //     }
+
+
+    // for ( let i = 0; i < rows; i++) {
+    //   yAverage[i] = +(yValues.reduce((previous, current, index) =>{
+    //     if(index === 1) return previous[i] + current[i];
+    //     return previous + current[i];
+    //     })/m);
+    // }
+    averageY = +(yAverage.reduce((previous, el) => previous + el)/rows);
+    
+    console.log("Середній Y")
+    console.log(yAverage);
+    console.log(averageY);
+
+    return(
+      this.setState({
+        yAverage,
+        averageY
+      }, (!this.state.isHomogeneous && m < 10) ? this.findDispersion() : null )
+    )
+  }
+
+  calculateXAverage = () => {
+    const {xNatur, rows} = this.state;  
+    let xAverage = [];
+
+    xNatur.forEach((element, index) => {
+      xAverage[index] = +(element.reduce((previous, el) => previous + el)/rows);
+    })
+    console.log("Середній Х")
+    console.log(xAverage)
+    return(this.setState({
+      xAverage
+    })
+    )
+  }
+
+  findDispersion = () => {
+    const {yAverage, yValues, rows, m} = this.state;
+    const dispersion = [];  
+    // const dispersion1 = [];  
+
+    for(let i = 0; i < rows; i++){
+      dispersion[i] = 0;
+      for(let j = 0; j < m; j++){
+        dispersion[i] += Math.pow((yValues[j][i] - yAverage[i]), 2)
+      }
+      dispersion[i] /= m
+    }
+
+
+    // for ( let i = 0; i < rows; i++ ) {
+    //   dispersion1[i] = +(yValues.reduce((previous, current, index) =>{
+    //     if( yValues.length == 2) return ((Math.pow(( previous[i] - yAverage[i] ), 2) ) + ( Math.pow( ( current[i] - yAverage[i] ), 2) ) )
+    //     if(index === 1) return +( Math.pow( ( previous[i] - yAverage[i] ), 2) );
+    //     return +(previous + +( Math.pow( ( current[i] - yAverage[i] ), 2) ));
+    //   })/m);
+    // }
+
+    console.log("dispersion");
+    console.log(dispersion);
+
+
+    // console.log("dispersion1");
+    // console.log(dispersion1);
+
+    return(this.setState({
+      dispersion
+    }, (!this.state.isHomogeneous && m < 10) ? this.checkKochreane() : null ) )
+    
+  }
+
+
+  checkKochreane = () => {
+    const {dispersion, m, selectedTypeOfEq} = this.state;
+
+    const gp = +((Math.max(...dispersion)) / (dispersion.reduce((previous, current) => previous + current)));
+    // const f1 = m - 1;
+    // const f2 = 8;
+    let gTable = [];
+    if (selectedTypeOfEq == 0){
+      gTable = [0.7679, 0.6841, 0.6287, 0.5892, 0.5598, 0.5365, 0.5175,0.5017];
+    }else if (selectedTypeOfEq == 1){
+      gTable = [0.5157, 0.4377, 0.3910, 0.3595, 0.3362, 0.3185, 0.3043,0.2926];
+    }else {
+      gTable = [0.3346, 0.2758, 0.2419, 0.2159, 0.2034, 0.1911, 0.1815,0.1736];
+    }
+
+    const isHomogeneous = gp < gTable[m - 2];
+    const gTableUsing = gTable[m - 2];
+
+    // return(new Promise((resolve, reject) => isHomogeneous ? resolve(gp,isHomogeneous, gTableUsing) : reject()))
+
+    console.log(`Дисперсія однорідна? ${isHomogeneous}`)
+    console.log(`Значення коефіцієнту Кохрена ${gp}`)
+    console.log(`Значення табл коефіцієнту ${gTableUsing}`)
+
+    this.setState({
+      gp,
+      isHomogeneous,
+      gTableUsing
+    }
+    , () => (!isHomogeneous && m < 10) ? this.addAColumn() : null
+    )
+  }
+
+  checkStudent = () => {
+    const {dispersion, m, yAverage, xNorm, rows, coeff} = this.state;
+
+    const betha = [];
+    const t = [];
+
+    const dispersionVidtv = dispersion.reduce((previous, current) => previous + current) / rows;
+    const dispersionB = Math.sqrt( dispersionVidtv / (rows * m));
+
+
+
+  }
+
 
 
   handleTypeChange = (event) => {
@@ -367,17 +573,6 @@ class App extends Component {
       , () => this.makeCalculations()
     )
   
-  }
-
-  makeCalculations = () => {
-    const promise = function () {
-      return( new Promise((resolve, reject) => resolve()) )
-    }()
-
-    promise
-          .then(() => this.pickData())
-          .then(() => this.generateYValues())
-
   }
 
   handleLabChange = (event) => {
