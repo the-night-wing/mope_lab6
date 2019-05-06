@@ -99,4 +99,4 @@ function solve (A, b) {
 
   export default solve;
 
-  // console.log(solve([[ 1, 2],[ 3, 4]], [5, 11]))
+  // console.log(solve([[ 1, 2],[ 3, 3]], [23, 48])) => [9, 7]

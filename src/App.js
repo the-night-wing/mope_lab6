@@ -4,21 +4,24 @@ import "./bootstrap.css";
 
 import GreetingScreen from "./components/greetingScreen/greetingScreen.js"
 import Table from "./components/table/table.js"
-// import TableCell from "./components/tableCell/tableCell.js"
+import solve from "./solve.js"
+import TableCell from "./components/tableCell/tableCell.js"
+import ResultOutput from "./components/resultOutput/resultOutput.js"
 
 class App extends Component {
 
   state = {
     xMin : [-40, -35, 15],
     xMax : [20, 15, 25],
-    selectedLab : 0 ,
+    selectedLab : 1,
     l : [1.215, 1.73],
     selectedTypeOfEq : 0,
     xNorm : [],
-    xNatur : [],
+    xNatur : [[]],
     xNormArray : [],
     xNaturArray : [],
-    m : 3,
+    addedColumns : [0, 0, 0],
+    m : 2,
     yMin : 0,
     yMax : 0,
     yValues : [],
@@ -33,8 +36,20 @@ class App extends Component {
     aSingle : [],
     aDouble : [],
     mx : [],
-    my : 0
-
+    my : 0,
+    coeffs : [],
+    check : [],
+    importantCoeffs : [],
+    yImportantValues : [],
+    dispersionVidtv : 0,
+    d : 0,
+    betha : [],
+    t : [],
+    tTableUsing : 0,
+    isAdequate : false,
+    fp : 0,
+    fTableUsing : 0,
+    result : []
   }
 
   start = () => {
@@ -70,10 +85,22 @@ class App extends Component {
           .then(() => this.calculateXAverage())
           // while( !this.state.isHomogeneous && this.state.m < 10 ){
           // promise
-            .then(() => this.calculateYAverage())
-            .then(() => this.findDispersion())
-            .then(() => this.checkCochrane())
-            .then(() => this.calculateTemporaryCoeffs())
+          .then(() => this.calculateYAverage())
+          .then(() => this.findDispersion())
+          .then(() => this.checkCochrane())
+          .then(() => this.calculateTemporaryCoeffs())
+          .then(() => this.calculateCoeffs())
+          .then(() => this.checkStudent())
+          .then(() => this.checkFisher())
+          .then(() => this.showResults())
+            // .then((f, fTableUsing) => {
+            //       this.setState({f, fTableUsing},
+            //         () => this.showResults()) 
+            //       })
+            // .catch((f, fTableUsing) => {
+            //       this.setState({f, fTableUsing},
+            //         () => this.changeType()) 
+            //       })
 
           // }  //returns promise
               // .then(() => )
@@ -385,7 +412,7 @@ class App extends Component {
   }
 
   addAColumn = () => {
-    const {m, yValues, yMin, yMax, selectedTypeOfEq, selectedLab, rows,xNatur} = this.state;
+    const {m, yValues, yMin, yMax, selectedTypeOfEq, selectedLab, rows,xNatur, addedColumns} = this.state;
     const newColumn = [];
 
     if (selectedLab == 0)  {
@@ -416,11 +443,13 @@ class App extends Component {
     // const newM = m + 1;
     console.log("Було додано стовпчик")
     console.log(yValues1);
-    
+    const addedColumns1 = addedColumns;
+    addedColumns1[selectedTypeOfEq] += 1
     return(
       this.setState({
         yValues : yValues1,
-        m : m + 1
+        m : m + 1,
+        addedColumns : addedColumns1
       }, (m < 10) ? this.calculateYAverage() : null)
     )
   }
@@ -530,6 +559,7 @@ class App extends Component {
     // const f1 = m - 1;
     // const f2 = 8;
     let gTable = [];
+
     if (selectedTypeOfEq == 0){
       gTable = [0.7679, 0.6841, 0.6287, 0.5892, 0.5598, 0.5365, 0.5175,0.5017];
     }else if (selectedTypeOfEq == 1){
@@ -601,13 +631,46 @@ class App extends Component {
 
   calculateCoeffs = () => {
     // giraffe live in zoo. 
+    const {mx, my, aSingle, aDouble, xNatur, rows} = this.state;
 
-    
+    const firstRow = [1, ...mx];
+    const anotherRows = [];
+
+    for(let i = 0; i < aDouble.length; i++){
+      anotherRows[i] = [mx[i]];
+      for(let j = 0; j < aDouble[i].length;j++){
+        anotherRows[i].push(aDouble[j][i])
+      }
+    }
+
+    const freeRow = [my, ...aSingle]
+
+    const coeffs = solve([[1, ...mx], ...anotherRows], [my, ...aSingle]);
+
+    console.log("coeffs");
+    console.log(coeffs);
+
+    const check = [];
+    for(let i = 0; i < rows; i++){
+      check[i] = coeffs[0];
+      for(let j = 0; j < coeffs.length-1; j++){
+        check[i] += coeffs[j+1]*xNatur[j][i]
+      }
+    }
+
+    console.log("check");
+    console.log(check);
+
+    this.setState({
+      coeffs,
+      check
+    })
+
   }
 
 
   checkStudent = () => {
-    const {dispersion, m, yAverage, xNorm, rows, coeff} = this.state;
+    const {dispersion, m, yAverage, xNorm, rows, coeffs, selectedTypeOfEq, xNatur} = this.state;
 
     const betha = [];
     const t = [];
@@ -615,16 +678,116 @@ class App extends Component {
     const dispersionVidtv = dispersion.reduce((previous, current) => previous + current) / rows;
     const dispersionB = Math.sqrt( dispersionVidtv / (rows * m));
 
+    for(let i = 0; i < coeffs.length; i++){
+      betha[i] = 0
+      for(let j = 0; j < rows ; j++){
+        betha[i] += yAverage[j]*xNorm[i][j]
+      }
+      betha[i] /= rows
 
+      t[i] = Math.abs(betha[i]) / dispersionB
+    }
 
+    let tTable = [];
+    if (selectedTypeOfEq == 0){
+      tTable = [2.306, 2.179, 2.120, 2.086, 2.064, 2.048, 2.040, 2.030];
+    }else if (selectedTypeOfEq == 1){
+      tTable = [2.120, 2.064, 2, 2, 2, 2, 2, 2];
+    }else {
+      tTable = [2.064, 2, 2, 2, 2, 2, 2, 2];
+    }
+
+    const tTableUsing = tTable[m-2]
+    const abc = t.map((el) => el > tTableUsing);
+    const importantCoeffs = abc.map((el, i) => el * coeffs[i])
+    const d = importantCoeffs.filter((el) => el !== 0).length;
+    
+    console.log("important Coeffs");
+    console.log(importantCoeffs);
+
+    const yImportantValues = [];
+    for(let i = 0; i < rows; i++){  
+      yImportantValues[i] = importantCoeffs[0];
+      for(let j = 0; j < importantCoeffs.length-1; j++){
+        yImportantValues[i] += importantCoeffs[j+1]*xNatur[j][i]
+      }
+    }
+
+    console.log("important Y values");
+    console.log(yImportantValues);
+
+    this.setState({
+      dispersionVidtv,
+      importantCoeffs,
+      d,
+      betha,
+      t,
+      tTableUsing,
+      yImportantValues
+    })
   }
 
+  checkFisher = () => {
+    const {d, dispersionVidtv, rows, yAverage, importantCoeffs, yImportantValues, m} = this.state;
+
+    let dispersionAD = 0;
+    yImportantValues.forEach((el, i) => {
+      dispersionAD += +Math.pow( (el - yAverage[i]), 2 ) 
+    })
+    dispersionAD = +(dispersionAD * m / (rows - d))
+    console.log("Диперсія відтвор")
+    console.log(dispersionVidtv)
+    console.log("Диперсія адекватності")
+    console.log(dispersionAD)
+    const fTable = [ [5.3, 4.8, 4.5, 4.4, 4.3], [4.5, 3.9, 3.6, 3.5, 3.4], [4.1, 3.5, 3.2, 3.1, 3.0] ];
+    const fp = +(dispersionAD / dispersionVidtv);
+    console.log("Коефіціент Кохрена")
+    console.log(fp)
+    // const fTableUsing = fTable[3 - d][m - 3];
+    const fTableUsing = 4;
+    const isAdequate = fp < fTableUsing;
+    console.log(`Функція адекватна? ${isAdequate}`);
+    this.setState({fp, fTableUsing, isAdequate})
+
+    // return(new Promise((resolve, reject) => {
+    //   isAdequate ? resolve(f, fTableUsing) : reject(f, fTableUsing)
+    // }))
+  }
+
+  showResults = () => {
+    this.setState(({result, coeffs, check, selectedTypeOfEq, selectedLab, yAverage, addedColumns, gp, gTableUsing, dispersion,importantCoeffs, yImportantValues, t, tTableUsing, isAdequate, fTableUsing, fp}) => {
+      return({
+        result : [...result, 
+        <ResultOutput 
+        coffsData={{coeffs, check, selectedTypeOfEq, selectedLab}}
+        CochraneData={{yAverage, addedColumns, gp, gTableUsing, dispersion}}
+        StudentData={{importantCoeffs, yImportantValues, t, tTableUsing}}
+        FisherData={{isAdequate, fTableUsing, fp}}
+        />]
+      })
+    }
+    , () => this.state.isAdequate ? null : this.changeType() 
+    )
+  }
+
+  changeType = () => {
+    console.log("trying to change the type")
+    if (this.state.selectedTypeOfEq != 2) {
+      this.setState(({selectedTypeOfEq}) => {
+        return({
+          selectedTypeOfEq : selectedTypeOfEq + 1
+        })
+      }, () => this.makeCalculations())
+    }
+  }
 
 
   handleTypeChange = (event) => {
 
     this.setState({
-      selectedTypeOfEq : event.target.value
+      selectedTypeOfEq : event.target.value,
+      result : [],
+      addedColumns : [0, 0, 0]
       }
       , () => this.makeCalculations()
     )
@@ -635,7 +798,9 @@ class App extends Component {
      
     this.setState({
       selectedLab : event.target.value,
-      m : ( (event.target.value == 0) ? 3 : 2 )
+      m : ( (event.target.value == 0) ? 3 : 2 ),
+      result : [],
+      addedColumns : [0, 0, 0]
       }
       , () => this.makeCalculations()
       // , console.log(this.state.selectedTypeOfEq)
@@ -663,17 +828,20 @@ class App extends Component {
           </a>
         </header> */}
         <GreetingScreen handleLabChange={(event) => this.handleLabChange(event)} selectedLab={this.state.selectedLab} handleTypeChange={(event) => this.handleTypeChange(event)} selectedType={this.state.selectedTypeOfEq}/>
-        <Table xValues={this.state.xNorm} />
-        <Table xValues={this.state.xNatur} />
-        <h4>{this.state.xNatur}</h4>
-        <div className="column">
-        {/* {
+        {/* <Table xValues={this.state.xNorm} /> */}
+        {/* <Table xValues={this.state.xNatur} /> */}
+        {/* <h4>{this.state.xNatur}</h4> */}
+        {this.state.result}
+        
+        {/* <div className="column">
+
+        {
           
             this.state.xNatur[0].map((item) => {
                 return (item > 0) ? <TableCell value={`+${item}`}/> : <TableCell value={item}/>
             })
-        }     */}
-        </div>
+        }    
+        </div> */}
 
       </div>
     );
