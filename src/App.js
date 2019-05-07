@@ -320,9 +320,11 @@ class App extends Component {
     console.log("/////////////////////////////////////////////")
     console.log("Selected type = " + selectedTypeOfEq);
     console.log("Selected lab = " + selectedLab);
+    console.log("xNorm");
     console.log(xNorm);
+    console.log("xNatur");
     console.log(xNatur);
-    console.log("/////////////////////////////////////////////")
+    // console.log("/////////////////////////////////////////////")
     
     this.setState({
       xNorm,
@@ -756,6 +758,7 @@ class App extends Component {
 
   showResults = () => {
     this.setState(({result, coeffs, check, selectedTypeOfEq, selectedLab, yAverage, addedColumns, gp, gTableUsing, dispersion,importantCoeffs, yImportantValues, t, tTableUsing, isAdequate, fTableUsing, fp}) => {
+      console.log("/////////////////////////////////////////////")
       return({
         result : [...result, 
         <ResultOutput 
@@ -775,7 +778,7 @@ class App extends Component {
     if (this.state.selectedTypeOfEq != 2) {
       this.setState(({selectedTypeOfEq}) => {
         return({
-          selectedTypeOfEq : selectedTypeOfEq + 1
+          selectedTypeOfEq : +selectedTypeOfEq + 1
         })
       }, () => this.makeCalculations())
     }
@@ -791,7 +794,6 @@ class App extends Component {
       }
       , () => this.makeCalculations()
     )
-  
   }
 
   handleLabChange = (event) => {

@@ -1,0 +1,19 @@
+.result{
+    border: 2px dashed black;
+    /* border-style:   */
+}
+
+.block{
+    border: 1px dotted grey;
+}
+
+.leftAlign{
+    /* margin-left: 200px; */
+    display: inline;
+}
+
+h5{
+    /* margin-right: 200px; */
+    display: inline;
+    margin: 0 10px;
+}

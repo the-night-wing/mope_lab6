@@ -1,4 +1,5 @@
 import React from "react"
+import "./tableCell.css"
 
 const TableCell = ({value}) => {
     return(

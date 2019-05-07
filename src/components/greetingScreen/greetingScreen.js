@@ -15,7 +15,7 @@
         return(
             <div className="greetingScreen">
                 <h1>Кривошей Денис Варіант №112</h1>
-                <h3>Лабораторна робота №6</h3>
+                <h3>{`Лабораторна робота №${selectedLab == 0 ? "5" : "6"}`}</h3>
                 <form>
                     {/* <div className="form-check"> */}
                 <label className="labPicking">
