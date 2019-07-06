@@ -3,9 +3,9 @@ import './App.css';
 import "./bootstrap.css";
 
 import GreetingScreen from "./components/greetingScreen/greetingScreen.js"
-import Table from "./components/table/table.js"
+// import Table from "./components/table/table.js"
 import solve from "./solve.js"
-import TableCell from "./components/tableCell/tableCell.js"
+// import TableCell from "./components/tableCell/tableCell.js"
 import ResultOutput from "./components/resultOutput/resultOutput.js"
 
 class App extends Component {
